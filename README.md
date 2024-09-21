@@ -8,4 +8,4 @@
 
 # Week 4 Limited Direct Execution -> In Progress
 
-## -> 1 Priveleged operation aka System Call
+## -> 1 Privileged operation aka System Call
