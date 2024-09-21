@@ -28,16 +28,16 @@ sequenceDiagram
     Note over User_Process,CPU: Switch from User Mode to Kernel Mode
     Time->>Time: ↓
     CPU->>OS_Kernel: Transfer Control using Trap Table Entry
-    OS_Kernel->>PCB: Save current registers and program counter
+    OS_Kernel->>Kernel_Stack: Save current registers and program counter
     OS_Kernel->>Kernel_Stack: Switch to this process's kernel stack
-    Note over CPU,OS_Kernel: Context Switch to Kernel Mode
+    Note over CPU,OS_Kernel: Switch to Kernel Mode
     Time->>Time: ↓
     OS_Kernel->>OS_Kernel: Read System Call Number from Register
     OS_Kernel->>Trap_Table: Lookup System Call Handler
     OS_Kernel->>OS_Kernel: Execute System Call Handler
     Note over OS_Kernel: Perform Privileged Operation
     Time->>Time: ↓
-    OS_Kernel->>PCB: Restore saved registers and program counter
+    OS_Kernel->>Kernel_Stack: Restore saved registers and program counter
     OS_Kernel->>CPU: Execute Return from Trap Instruction
     Note over OS_Kernel,CPU: Switch Back to User Mode
     CPU->>User_Process: Resume Execution
@@ -84,7 +84,7 @@ sequenceDiagram
    - This mechanism allows the OS to intercept the system call and handle it securely, maintaining the separation between user space and kernel space.
 
 6. **Context Saving:**
-   - The Operating System Kernel saves the current context of the process in its Process Control Block (PCB).
+   - The Operating System Kernel saves the current context of the process in its Kernel Stack.
    - This includes saving:
      a. All general-purpose registers
      b. The program counter (which points to the instruction right after the system call)
@@ -108,7 +108,7 @@ sequenceDiagram
    - Once the operation is complete, the Operating System Kernel prepares to return control to the User Process.
    - This includes:
      a. Setting up any return values or error codes resulting from the system call.
-     b. Restoring the saved registers and program counter from the Process Control Block (PCB), ensuring that it will return to the correct point in the user process.
+     b. Restoring the saved registers and program counter from the kernel stack (per-process), ensuring that it will return to the correct point in the user process.
 
 10. **Return from Trap:**
     - The Operating System Kernel executes a special "return from trap" instruction (e.g., `iret` in x86 architecture).
@@ -131,12 +131,7 @@ sequenceDiagram
    - Maps system call numbers to their corresponding handler functions in the kernel.
    - Ensures that user processes can only invoke predefined entry points into the kernel.
 
-2. **Process Control Block (PCB):**
-   - Stores essential information about each process.
-   - Includes process state, register values, program counter, memory management information, and more.
-   - Allows the kernel to save and restore process context during system calls and context switches.
-
-3. **Kernel Stack:**
+2. **Kernel Stack:**
    - A separate stack used by the kernel when handling system calls or exceptions for a process.
    - Prevents interference between kernel operations and the user process's stack.
    - Each process has its own kernel stack to maintain isolation between processes.
